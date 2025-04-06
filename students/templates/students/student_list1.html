@@ -1,0 +1,177 @@
+{% extends 'students/base.html' %}
+
+{% block title %}Student List{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <!-- Student Form Card -->
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-header bg-primary text-white d-flex align-items-center">
+                <i class="fas fa-user-plus fa-2x me-3"></i>
+                <div>
+                    <h5 class="card-title mb-0">Add New Student</h5>
+                    <small class="text-white-50">Fill in the details below</small>
+                </div>
+            </div>
+            <div class="card-body">
+                <form method="POST" class="needs-validation" novalidate>
+                    {% csrf_token %}
+                    {% for field in form %}
+                        <div class="mb-4">
+                            <label for="{{ field.id_for_label }}" class="form-label">
+                                {{ field.label }}
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    {% if field.name == 'name' %}
+                                        <i class="fas fa-user"></i>
+                                    {% elif field.name == 'roll_number' %}
+                                        <i class="fas fa-id-card"></i>
+                                    {% elif field.name == 'student_class' %}
+                                        <i class="fas fa-graduation-cap"></i>
+                                    {% endif %}
+                                </span>
+                                {{ field }}
+                            </div>
+                            {% if field.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ field.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-save me-2"></i>Save Student
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Student List Card -->
+    <div class="col-md-8">
+        <div class="card h-100">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-users fa-2x me-3"></i>
+                    <div>
+                        <h5 class="card-title mb-0">Student List</h5>
+                        <small class="text-white-50">Manage your students</small>
+                    </div>
+                </div>
+                <div class="input-group" style="width: 300px;">
+                    <span class="input-group-text bg-white">
+                        <i class="fas fa-search text-primary"></i>
+                    </span>
+                    <input type="text" class="form-control" id="searchInput" placeholder="Search students...">
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0" id="studentTable">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Roll Number</th>
+                                <th>Class</th>
+                                <th class="text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for student in students %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-circle me-2">
+                                            {{ student.name|first|upper }}
+                                        </div>
+                                        {{ student.name }}
+                                    </div>
+                                </td>
+                                <td>{{ student.roll_number }}</td>
+                                <td>
+                                    <span class="badge bg-primary">{{ student.student_class }}</span>
+                                </td>
+                                <td class="text-center">
+                                    <div class="action-buttons">
+                                        <a href="{% url 'edit_student' student.pk %}" class="btn btn-warning btn-sm" title="Edit">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="{% url 'delete_student' student.pk %}" class="btn btn-danger btn-sm" title="Delete">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center py-5">
+                                    <div class="text-muted">
+                                        <i class="fas fa-users fa-3x mb-3"></i>
+                                        <p class="mb-0">No students found. Add your first student!</p>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .avatar-circle {
+        width: 35px;
+        height: 35px;
+        background: linear-gradient(135deg, var(--primary-color) 0%, #2980b9 100%);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+    }
+    
+    .input-group-text {
+        border: none;
+        border-radius: 8px 0 0 8px;
+    }
+    
+    .input-group .form-control {
+        border-radius: 0 8px 8px 0;
+    }
+    
+    .badge {
+        padding: 0.5em 1em;
+        font-weight: 500;
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    const studentTable = document.getElementById('studentTable');
+    const rows = studentTable.getElementsByTagName('tr');
+
+    searchInput.addEventListener('keyup', function() {
+        const searchText = searchInput.value.toLowerCase();
+
+        for (let i = 1; i < rows.length; i++) {
+            const row = rows[i];
+            const name = row.cells[0].textContent.toLowerCase();
+            const rollNumber = row.cells[1].textContent.toLowerCase();
+            const studentClass = row.cells[2].textContent.toLowerCase();
+
+            if (name.includes(searchText) || rollNumber.includes(searchText) || studentClass.includes(searchText)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        }
+    });
+});
+</script>
+{% endblock %}
